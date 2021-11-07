@@ -1,6 +1,5 @@
 package com.aninfo.service;
 
-import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.factory.TransactionFactory;
 import com.aninfo.model.Transaction;
 import com.aninfo.model.TransactionType;
@@ -37,18 +36,18 @@ class TransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Transaction createTransaction(Transaction transaction) {
-
-        if (transaction.getType() == TransactionType.DEPOSIT) {
-            this.accountService.deposit(transaction.getCbu(), transaction.getSum());
-
-        } else if (transaction.getType() == TransactionType.WITHDRAWAL) {
-            this.accountService.withdraw(transaction.getCbu(), transaction.getSum());
-
-        } else {
-            throw new InvalidTransactionTypeException("Invalid transaction type.");
+        switch (transaction.getType()) {
+            case DEPOSIT:
+                this.accountService.deposit(transaction.getDestinationCbu(), transaction.getSum());
+                this.accountService.withdraw(transaction.getCbu(), transaction.getSum());
+                return this.transactionRepository.save(transaction);
+            case WITHDRAWAL:
+                this.accountService.withdraw(transaction.getDestinationCbu(), transaction.getSum());
+                this.accountService.deposit(transaction.getCbu(), transaction.getSum());
+                return this.transactionRepository.save(transaction);
+            default:
+                throw new UnsupportedOperationException("Invalid transaction type.");
         }
-
-        return this.transactionRepository.save(transaction);
     }
 
     public Collection<Transaction> getTransactions(long cbu) {

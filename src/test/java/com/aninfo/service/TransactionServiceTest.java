@@ -1,7 +1,7 @@
 package com.aninfo.service;
 
-import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.factory.TransactionFactory;
+import com.aninfo.model.Account;
 import com.aninfo.model.Transaction;
 import com.aninfo.model.TransactionType;
 import com.aninfo.repository.TransactionRepository;
@@ -25,6 +25,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 class TransactionServiceTest {
 
     private static final Long CBU = 1234567890L;
+    private static final Long DESTINATION_CBU = 987654321L;
     private static final Double SUM = 123D;
 
     @InjectMocks
@@ -56,6 +57,7 @@ class TransactionServiceTest {
         initMocks(this);
 
         when(this.transaction.getCbu()).thenReturn(CBU);
+        when(this.transaction.getDestinationCbu()).thenReturn(DESTINATION_CBU);
         when(this.transaction.getSum()).thenReturn(SUM);
     }
 
@@ -83,37 +85,33 @@ class TransactionServiceTest {
     }
 
     @Test
-    void createTransaction_withUnknownTransactionTypeThrowsInvalidTransactionTypeException() {
-        when(this.transaction.getType()).thenReturn(null);
-        InvalidTransactionTypeException exception = assertThrows(InvalidTransactionTypeException.class,
-                () -> this.transactionService.createTransaction(this.transaction));
-        assertEquals("Invalid transaction type.", exception.getMessage());
-    }
-
-    @Test
     void createTransaction_asDeposit() {
         when(this.transaction.getType()).thenReturn(DEPOSIT);
-        when(this.accountService.deposit(CBU, SUM)).thenReturn(any());
+        when(this.accountService.deposit(DESTINATION_CBU, SUM)).thenReturn(mock(Account.class));
+        when(this.accountService.withdraw(CBU, SUM)).thenReturn(mock(Account.class));
         when(this.transactionRepository.save(this.transaction)).thenReturn(this.expectedTransaction);
 
         Transaction actualTransaction = this.transactionService.createTransaction(this.transaction);
 
         assertSame(this.expectedTransaction, actualTransaction);
-        verify(this.accountService).deposit(this.cbuArgumentCaptor.capture(), this.sumArgumentCaptor.capture());
-        verifyCommonTransactionCreation();
+        verify(this.accountService).deposit(DESTINATION_CBU, SUM);
+        verify(this.accountService).withdraw(CBU, SUM);
+        verify(this.transactionRepository).save(this.transaction);
     }
 
     @Test
     void createTransaction_asWithdrawal() {
         when(this.transaction.getType()).thenReturn(WITHDRAWAL);
-        when(this.accountService.withdraw(CBU, SUM)).thenReturn(any());
+        when(this.accountService.withdraw(DESTINATION_CBU, SUM)).thenReturn(mock(Account.class));
+        when(this.accountService.deposit(CBU, SUM)).thenReturn(mock(Account.class));
         when(this.transactionRepository.save(this.transaction)).thenReturn(this.expectedTransaction);
 
         Transaction actualTransaction = this.transactionService.createTransaction(this.transaction);
 
         assertSame(this.expectedTransaction, actualTransaction);
-        verify(this.accountService).withdraw(this.cbuArgumentCaptor.capture(), this.sumArgumentCaptor.capture());
-        verifyCommonTransactionCreation();
+        verify(this.accountService).withdraw(DESTINATION_CBU, SUM);
+        verify(this.accountService).deposit(CBU, SUM);
+        verify(this.transactionRepository).save(this.transaction);
     }
 
     @Test
@@ -136,12 +134,5 @@ class TransactionServiceTest {
         assertTrue(transactions.contains(this.otherTransaction));
 
         verify(this.transactionRepository, times(3)).getTransactionsByCbu(CBU);
-    }
-
-    private void verifyCommonTransactionCreation() {
-        assertEquals(CBU, this.cbuArgumentCaptor.getValue());
-        assertEquals(SUM, this.sumArgumentCaptor.getValue());
-        verify(this.transactionRepository).save(this.transaction);
-        verifyNoMoreInteractions(this.accountService);
     }
 }

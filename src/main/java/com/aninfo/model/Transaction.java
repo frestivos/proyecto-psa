@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 import static com.aninfo.model.TransactionStatus.FAILED;
 import static com.aninfo.model.TransactionStatus.SUCCESSFUL;
@@ -14,16 +15,28 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @NotNull
     private Long cbu;
+
+    @NotNull
+    private Long destinationCbu;
+
+    @NotNull
     private TransactionType type;
+
+    @NotNull
     private Double sum;
+
+    @NotNull
     private TransactionStatus status = SUCCESSFUL;
 
     public Transaction() {
     }
 
-    public Transaction(Long cbu, TransactionType type, Double sum) {
+    public Transaction(Long cbu, Long destinationCbu, TransactionType type, Double sum) {
         this.cbu = cbu;
+        this.destinationCbu = destinationCbu;
         this.type = type;
         this.sum = sum;
     }
@@ -55,6 +68,14 @@ public class Transaction {
 
     public void setType(TransactionType type) {
         this.type = type;
+    }
+
+    public Long getDestinationCbu() {
+        return destinationCbu;
+    }
+
+    public void setDestinationCbu(Long destinationCbu) {
+        this.destinationCbu = destinationCbu;
     }
 
     public Double getSum() {
