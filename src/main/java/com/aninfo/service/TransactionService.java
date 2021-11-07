@@ -38,10 +38,12 @@ class TransactionService {
     public Transaction createTransaction(Transaction transaction) {
         switch (transaction.getType()) {
             case DEPOSIT:
-                this.accountService.deposit(transaction.getCbu(), transaction.getSum());
+                this.accountService.deposit(transaction.getDestinationCbu(), transaction.getSum());
+                this.accountService.withdraw(transaction.getCbu(), transaction.getSum());
                 return this.transactionRepository.save(transaction);
             case WITHDRAWAL:
-                this.accountService.withdraw(transaction.getCbu(), transaction.getSum());
+                this.accountService.withdraw(transaction.getDestinationCbu(), transaction.getSum());
+                this.accountService.deposit(transaction.getCbu(), transaction.getSum());
                 return this.transactionRepository.save(transaction);
             default:
                 throw new UnsupportedOperationException("Invalid transaction type.");
