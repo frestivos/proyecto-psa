@@ -1,6 +1,5 @@
 package com.aninfo.service;
 
-import com.aninfo.exceptions.InvalidTransactionTypeException;
 import com.aninfo.factory.TransactionFactory;
 import com.aninfo.model.Transaction;
 import com.aninfo.model.TransactionType;
@@ -80,14 +79,6 @@ class TransactionServiceTest {
         Transaction actualTransaction = this.transactionService.saveTransaction(this.transaction);
 
         assertSame(this.expectedTransaction, actualTransaction);
-    }
-
-    @Test
-    void createTransaction_withUnknownTransactionTypeThrowsInvalidTransactionTypeException() {
-        when(this.transaction.getType()).thenReturn(null);
-        InvalidTransactionTypeException exception = assertThrows(InvalidTransactionTypeException.class,
-                () -> this.transactionService.createTransaction(this.transaction));
-        assertEquals("Invalid transaction type.", exception.getMessage());
     }
 
     @Test

@@ -26,6 +26,16 @@ public class Account {
     public Account(){
     }
 
+    public Account(Long cbu,
+                   Currency currency,
+                   String name,
+                   Double balance) {
+        this.cbu = cbu;
+        this.currency = currency;
+        this.name = name;
+        this.balance = balance;
+    }
+
     public Account(Double balance) {
         this.balance = balance;
     }

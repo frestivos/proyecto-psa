@@ -24,7 +24,7 @@ class AccountService {
     private AccountRepository accountRepository;
 
     public Account createAccount(Account account) {
-        return accountRepository.save(account);
+        return this.accountRepository.save(account);
     }
 
     public Collection<Account> getAccounts() {
@@ -33,12 +33,21 @@ class AccountService {
         return accounts;
     }
 
-    public Optional<Account> findByCbu(Long cbu) {
-        return accountRepository.findAccountByCbu(cbu);
+    public Account findByCbu(Long cbu) {
+        return this.accountRepository.findAccountByCbu(cbu)
+                .orElseThrow(() -> new AccountNotFoundException(ACCOUNT_NOT_FOUND_EXCEPTION_MESSAGE));
     }
 
     public void save(Account account) {
-        accountRepository.save(account);
+        this.accountRepository.save(account);
+    }
+
+    @Transactional
+    public void update(Long cbu, Account account) {
+        var accountRegistered = this.findByCbu(cbu);
+        account.setCbu(cbu);
+        account.setName(accountRegistered.getName());
+        this.save(account);
     }
 
     @Transactional

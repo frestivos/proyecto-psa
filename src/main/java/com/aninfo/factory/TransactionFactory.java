@@ -15,6 +15,6 @@ public class TransactionFactory {
             throw new InvalidTransactionTypeException("Invalid transaction type.");
         }
 
-        return new Transaction(cbu, transactionType, sum);
+        return new Transaction(cbu, cbu, transactionType, sum);
     }
 }

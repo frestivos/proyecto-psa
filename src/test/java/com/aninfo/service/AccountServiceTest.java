@@ -41,6 +41,9 @@ class AccountServiceTest {
     @Captor
     private ArgumentCaptor<Double> balanceArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<String> nameArgumentCaptor;
+
     @BeforeEach
     public void setUp() {
         initMocks(this);
@@ -84,16 +87,38 @@ class AccountServiceTest {
     void findByCbu() {
         // Didn't find any account
         when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.empty());
-        assertFalse(this.accountService.findByCbu(CBU).isPresent());
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class,
+                () -> this.accountService.findByCbu(CBU));
+        assertEquals("The CBU does not have any related account.", exception.getMessage());
 
         // Actually find some account
         when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.of(this.expectedAccount));
-        Optional<Account> actualAccount = this.accountService.findByCbu(CBU);
-
-        assertTrue(actualAccount.isPresent());
-        assertSame(this.expectedAccount, actualAccount.get());
+        Account actualAccount = this.accountService.findByCbu(CBU);
+        assertSame(this.expectedAccount, actualAccount);
 
         verify(this.accountRepository, times(2)).findAccountByCbu(CBU);
+    }
+
+    @Test
+    void update() {
+        // Didn't find any account to update
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.empty());
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class,
+                () -> this.accountService.update(CBU, this.account));
+        assertEquals("The CBU does not have any related account.", exception.getMessage());
+
+        // Updating the account
+        String name = "Some account name";
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.of(this.otherAccount));
+        when(this.otherAccount.getName()).thenReturn(name);
+        when(this.accountRepository.save(this.account)).thenReturn(any(Account.class));
+
+        this.accountService.update(CBU, this.account);
+
+        verify(this.accountRepository, times(2)).findAccountByCbu(CBU);
+        verify(this.account).setCbu(CBU);
+        verify(this.account).setName(name);
+        verify(this.accountRepository).save(this.account);
     }
 
     @Test
