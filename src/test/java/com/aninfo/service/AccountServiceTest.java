@@ -107,11 +107,24 @@ class AccountServiceTest {
 
     @Test
     void deleteByCbu() {
-        doNothing().when(this.accountRepository).deleteByCbu(CBU);
+        Long id = 123L;
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.of(this.account));
+        when(this.account.getId()).thenReturn(id);
+        doNothing().when(this.accountRepository).deleteById(id);
 
         this.accountService.deleteByCbu(CBU);
 
-        verify(this.accountRepository).deleteByCbu(CBU);
+        verify(this.accountRepository).findAccountByCbu(CBU);
+        verify(this.accountRepository).deleteById(id);
+    }
+
+    @Test
+    void deleteByCbu_accountNotFoundThrowsAccountNotFoundException() {
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.empty());
+
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class,
+                () -> this.accountService.deleteByCbu(CBU));
+        assertEquals("The CBU does not have any related account.", exception.getMessage());
     }
 
     @Test

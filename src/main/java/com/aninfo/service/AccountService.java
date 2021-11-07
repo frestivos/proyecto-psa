@@ -41,8 +41,11 @@ class AccountService {
         accountRepository.save(account);
     }
 
-    public void deleteByCbu(Long cbu) {
-        accountRepository.deleteByCbu(cbu);
+    @Transactional
+    public Account deleteByCbu(Long cbu) {
+        return this.accountRepository.findAccountByCbu(cbu)
+                .map(this::deleteAccount)
+                .orElseThrow(() -> new AccountNotFoundException(ACCOUNT_NOT_FOUND_EXCEPTION_MESSAGE));
     }
 
     @Transactional
@@ -73,5 +76,10 @@ class AccountService {
                     return accountRepository.save(account);
                 })
                 .orElseThrow(() -> new AccountNotFoundException(ACCOUNT_NOT_FOUND_EXCEPTION_MESSAGE));
+    }
+
+    private Account deleteAccount(Account account) {
+        this.accountRepository.deleteById(account.getId());
+        return account;
     }
 }

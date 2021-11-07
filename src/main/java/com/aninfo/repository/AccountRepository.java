@@ -10,7 +10,4 @@ import java.util.Optional;
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
     Optional<Account> findAccountByCbu(Long cbu);
-
-    void deleteByCbu(long cbu);
-
 }
