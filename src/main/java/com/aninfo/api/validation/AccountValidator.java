@@ -12,6 +12,7 @@ public class AccountValidator {
 
     public void validate(AccountRequest accountRequest) {
         this.validator.validateCbu(accountRequest.getCbu());
+        this.validator.validateAlias(accountRequest.getAlias());
         this.validator.validateCurrency(accountRequest.getCurrency());
         this.validator.validateName(accountRequest.getName());
     }
