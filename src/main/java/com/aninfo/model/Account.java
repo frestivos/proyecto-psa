@@ -15,6 +15,10 @@ public class Account {
     private Long cbu;
 
     @NotNull
+    @Column(name = "alias", unique = true)
+    private String alias;
+
+    @NotNull
     private Currency currency;
 
     @NotNull
@@ -27,10 +31,12 @@ public class Account {
     }
 
     public Account(Long cbu,
+                   String alias,
                    Currency currency,
                    String name,
                    Double balance) {
         this.cbu = cbu;
+        this.alias = alias;
         this.currency = currency;
         this.name = name;
         this.balance = balance;
@@ -70,6 +76,14 @@ public class Account {
 
     public void setCbu(Long cbu) {
         this.cbu = cbu;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public Double getBalance() {

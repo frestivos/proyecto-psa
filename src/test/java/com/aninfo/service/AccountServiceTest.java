@@ -1,6 +1,7 @@
 package com.aninfo.service;
 
 import com.aninfo.exceptions.AccountNotFoundException;
+import com.aninfo.exceptions.AlreadyExistsExeption;
 import com.aninfo.exceptions.DepositNegativeSumException;
 import com.aninfo.exceptions.InsufficientFundsException;
 import com.aninfo.model.Account;
@@ -28,6 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 class AccountServiceTest {
 
     private static final Long CBU = 1234567890L;
+    private static final String ALIAS = "drebrown";
 
     @InjectMocks
     private AccountService accountService;
@@ -51,12 +53,40 @@ class AccountServiceTest {
 
     @Test
     void createAccount() {
+        when(this.account.getCbu()).thenReturn(CBU);
+        when(this.account.getAlias()).thenReturn(ALIAS);
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.empty());
+        when(this.accountRepository.findAccountByAlias(ALIAS)).thenReturn(Optional.empty());
         when(this.accountRepository.save(this.account)).thenReturn(this.expectedAccount);
 
         Account actualAccount = this.accountService.createAccount(this.account);
 
         assertSame(this.expectedAccount, actualAccount);
+        verify(this.accountRepository).findAccountByCbu(CBU);
+        verify(this.accountRepository).findAccountByAlias(ALIAS);
         verify(this.accountRepository).save(this.account);
+    }
+
+    @Test
+    void createAccount_alreadyExistsCbuThrowsAlreadyExistsException() {
+        when(this.account.getCbu()).thenReturn(CBU);
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.of(mock(Account.class)));
+
+        AlreadyExistsExeption exception = assertThrows(AlreadyExistsExeption.class,
+                () -> this.accountService.createAccount(this.account));
+        assertEquals("The CBU already exists.", exception.getMessage());
+    }
+
+    @Test
+    void createAccount_alreadyExistsAliasThrowsAlreadyExistsException() {
+        when(this.account.getCbu()).thenReturn(CBU);
+        when(this.account.getAlias()).thenReturn(ALIAS);
+        when(this.accountRepository.findAccountByCbu(CBU)).thenReturn(Optional.empty());
+        when(this.accountRepository.findAccountByAlias(ALIAS)).thenReturn(Optional.of(mock(Account.class)));
+
+        AlreadyExistsExeption exception = assertThrows(AlreadyExistsExeption.class,
+                () -> this.accountService.createAccount(this.account));
+        assertEquals("The Alias already exists.", exception.getMessage());
     }
 
     @Test

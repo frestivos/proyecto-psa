@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
     Optional<Account> findAccountByCbu(Long cbu);
+
+    Optional<Account> findAccountByAlias(String alias);
 }

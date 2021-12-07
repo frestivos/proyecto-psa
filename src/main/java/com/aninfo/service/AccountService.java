@@ -1,6 +1,7 @@
 package com.aninfo.service;
 
 import com.aninfo.exceptions.AccountNotFoundException;
+import com.aninfo.exceptions.AlreadyExistsExeption;
 import com.aninfo.exceptions.DepositNegativeSumException;
 import com.aninfo.exceptions.InsufficientFundsException;
 import com.aninfo.model.Account;
@@ -16,6 +17,8 @@ import java.util.Optional;
 @Service
 class AccountService {
 
+    private static final String CBU_ALREADY_EXISTS_EXCEPTION_MESSAGE = "The CBU already exists.";
+    private static final String ALIAS_ALREADY_EXISTS_EXCEPTION_MESSAGE = "The Alias already exists.";
     private static final String ACCOUNT_NOT_FOUND_EXCEPTION_MESSAGE = "The CBU does not have any related account.";
     private static final String INSUFFICIENT_FUNDS_EXCEPTION_MESSAGE = "Insufficient funds";
     private static final String DEPOSIT_NEGATIVE_EXCEPTION_MESSAGE = "Cannot deposit negative sums";
@@ -24,6 +27,14 @@ class AccountService {
     private AccountRepository accountRepository;
 
     public Account createAccount(Account account) {
+        if(this.accountRepository.findAccountByCbu(account.getCbu()).isPresent()) {
+            throw new AlreadyExistsExeption(CBU_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+        }
+
+        if(this.accountRepository.findAccountByAlias(account.getAlias()).isPresent()) {
+            throw new AlreadyExistsExeption(ALIAS_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+        }
+
         return this.accountRepository.save(account);
     }
 

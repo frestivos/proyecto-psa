@@ -16,6 +16,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 class AccountValidatorTest {
 
     private static final Long CBU = 123456789L;
+    private static final String ALIAS = "mmcfly";
     private static final String CURRENCY = "Some currency code.";
     private static final String ACCOUNT_NAME = "Some acccount name.";
 
@@ -35,17 +36,22 @@ class AccountValidatorTest {
 
     @Test
     void validate() {
-        assertRequestValidationException(null, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
-        assertRequestValidationException(-1L, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
-        assertRequestValidationException(0L, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
+        assertRequestValidationException(null, ALIAS, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
+        assertRequestValidationException(-1L, ALIAS, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
+        assertRequestValidationException(0L, ALIAS, CURRENCY, ACCOUNT_NAME, "CBU could not be null or lower than zero.");
 
-        assertRequestValidationException(CBU, null, ACCOUNT_NAME, "The currency could not be null nor empty.");
-        assertRequestValidationException(CBU, "", ACCOUNT_NAME, "The currency could not be null nor empty.");
+        assertRequestValidationException(CBU, null, CURRENCY, ACCOUNT_NAME, "The account alias should not be null nor empty.");
+        assertRequestValidationException(CBU, "", CURRENCY, ACCOUNT_NAME, "The account alias should not be null nor empty.");
+        assertRequestValidationException(CBU, "asdfghjklqwe", CURRENCY, ACCOUNT_NAME, "The account alias could not exceed 10 characters.");
+        assertRequestValidationException(CBU, "12jso22oj", CURRENCY, ACCOUNT_NAME, "The account alias should only have alphabetic characters.");
 
-        assertRequestValidationException(CBU, CURRENCY, null, "The account name type could not be null nor empty.");
-        assertRequestValidationException(CBU, CURRENCY, "", "The account name type could not be null nor empty.");
+        assertRequestValidationException(CBU, ALIAS, null, ACCOUNT_NAME, "The currency could not be null nor empty.");
+        assertRequestValidationException(CBU, ALIAS, "", ACCOUNT_NAME, "The currency could not be null nor empty.");
 
-        loadAccountRequest(CBU, CURRENCY, ACCOUNT_NAME);
+        assertRequestValidationException(CBU, ALIAS, CURRENCY, null, "The account name type could not be null nor empty.");
+        assertRequestValidationException(CBU, ALIAS, CURRENCY, "", "The account name type could not be null nor empty.");
+
+        loadAccountRequest(CBU, ALIAS, CURRENCY, ACCOUNT_NAME);
         this.accountValidator.validate(accountRequest);
     }
 
@@ -59,19 +65,22 @@ class AccountValidatorTest {
     }
 
     private void assertRequestValidationException(Long cbu,
+                                                  String alias,
                                                   String currency,
                                                   String name,
                                                   String expectedMessage) {
-        loadAccountRequest(cbu, currency, name);
+        loadAccountRequest(cbu, alias, currency, name);
         RequestValidationException exception = assertThrows(RequestValidationException.class,
                 () -> this.accountValidator.validate(accountRequest));
         assertEquals(expectedMessage, exception.getMessage());
     }
 
     private void loadAccountRequest(Long cbu,
+                                    String alias,
                                     String currency,
                                     String name) {
         when(this.accountRequest.getCbu()).thenReturn(cbu);
+        when(this.accountRequest.getAlias()).thenReturn(alias);
         when(this.accountRequest.getCurrency()).thenReturn(currency);
         when(this.accountRequest.getName()).thenReturn(name);
     }

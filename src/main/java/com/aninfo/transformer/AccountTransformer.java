@@ -20,6 +20,7 @@ public class AccountTransformer {
         }
 
         return new Account(accountRequest.getCbu(),
+                accountRequest.getAlias().toLowerCase(),
                 Currency.valueOf(currency),
                 accountRequest.getName(),
                 this.randomBalance());
